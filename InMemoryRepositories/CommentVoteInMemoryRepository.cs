@@ -6,6 +6,32 @@ namespace InMemoryRepositories;
 public class CommentVoteInMemoryRepository: ICommentVoteRepository
 {
    private readonly List<CommentVote> commentVotes = new();
+   public CommentVoteInMemoryRepository()
+   {
+      commentVotes.Add(new CommentVote
+      {
+         Id = 1,
+         UserId = 1,
+         CommentId = 1,
+         IsLike = true
+      });
+
+      commentVotes.Add(new CommentVote
+      {
+         Id = 2,
+         UserId = 2,
+         CommentId = 2,
+         IsLike = true
+      });
+
+      commentVotes.Add(new CommentVote
+      {
+         Id = 3,
+         UserId = 3,
+         CommentId = 3,
+         IsLike = false
+      });
+   }
    public Task<CommentVote> AddAsync(CommentVote commentVote)
    {
       commentVote.Id = commentVotes.Any()

@@ -3,9 +3,35 @@ using RepositoryContracts;
 
 namespace InMemoryRepositories;
 
-public class PostVoteInMemoryRepository : ICommentRepository
+public class PostVoteInMemoryRepository : IPostVoteRepository
 {
     private readonly List<PostVote> postVotes = new();
+    public PostVoteInMemoryRepository()
+    {
+        postVotes.Add(new PostVote
+        {
+            Id = 1,
+            UserId = 1,
+            PostId = 2,
+            IsLike = true
+        });
+
+        postVotes.Add(new PostVote
+        {
+            Id = 2,
+            UserId = 2,
+            PostId = 1,
+            IsLike = true
+        });
+
+        postVotes.Add(new PostVote
+        {
+            Id = 3,
+            UserId = 3,
+            PostId = 1,
+            IsLike = false
+        });
+    }
     
     public Task<PostVote> AddAsync(PostVote postVote)
     {
@@ -68,5 +94,10 @@ public class PostVoteInMemoryRepository : ICommentRepository
     public IQueryable<PostVote> GetMany()
     {
         return postVotes.AsQueryable();
+    }
+
+    public Task<Post> getByIdAsync(int id)
+    {
+        throw new NotImplementedException();
     }
 }
