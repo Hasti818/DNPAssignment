@@ -96,8 +96,5 @@ public class PostVoteInMemoryRepository : IPostVoteRepository
         return postVotes.AsQueryable();
     }
 
-    public Task<Post> getByIdAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
+  
 }
