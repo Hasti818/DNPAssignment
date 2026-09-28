@@ -1,11 +1,11 @@
-﻿using InMemoryRepositories;
+﻿using FileRepositories;
 using RepositoryContracts;
 using CLI.UI;
-IUserRepository userRepository= new UserInMemoryRepository();
-IPostRepository postRepository= new PostInMemoryRepository();
-ICommentRepository commentRepository = new CommentInMemoryRepository();
-IPostVoteRepository postVoteRepository = new PostVoteInMemoryRepository();
-ICommentVoteRepository commentVoteRepository = new CommentVoteInMemoryRepository();
+IUserRepository userRepository = new UserFileRepository();
+IPostRepository postRepository = new PostFileRepository();
+ICommentRepository commentRepository = new CommentFileRepository();
+IPostVoteRepository postVoteRepository = new PostVoteFileRepository();
+ICommentVoteRepository commentVoteRepository = new CommentVoteFileRepository();
 CliApp app = new CliApp(
     userRepository,
     postRepository,
