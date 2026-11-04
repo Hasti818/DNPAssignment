@@ -45,11 +45,10 @@ public class UsersController : ControllerBase
             UserName = createdUser.UserName
         };
 
-        return CreatedAtAction(
-            nameof(GetSingleAsync),
-            new { id = createdUser.Id },
-            response
-        );
+        return Created(
+                $"/api/users/{createdUser.Id}",
+                response
+            );
     }
 
     // GET ONE USER

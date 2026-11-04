@@ -2,33 +2,44 @@ using ApiContracts.Posts;
 using Entities;
 using Microsoft.AspNetCore.Mvc;
 using RepositoryContracts;
+
 namespace WebAPI.Controllers;
+
 [ApiController]
 [Route("api/posts")]
-public class PostsController:ControllerBase
+public class PostsController : ControllerBase
 {
     private readonly IPostRepository postRepository;
     private readonly IUserRepository userRepository;
-    public PostsController(IPostRepository postRepository, IUserRepository userRepository)
+
+    public PostsController(
+        IPostRepository postRepository,
+        IUserRepository userRepository)
     {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
     }
 
+    // CREATE POST
+    // POST /api/posts
     [HttpPost]
-    public async Task<ActionResult<PostDto>> CreateAsync([FromBody] CreatePostDto dto)
+    public async Task<ActionResult<PostDto>> CreateAsync(
+        [FromBody] CreatePostDto dto)
     {
         try
         {
-            User user =await userRepository.GetSingleAsync(dto.UserId);
+            User user = await userRepository.GetSingleAsync(dto.UserId);
+
             Post post = new Post
             {
                 Title = dto.Title,
                 Body = dto.Body,
                 CreatedAt = DateTime.Now,
-                UserId = dto.UserId,
+                UserId = dto.UserId
             };
-            Post createdPost= await postRepository.AddAsync(post);
+
+            Post createdPost = await postRepository.AddAsync(post);
+
             PostDto response = new PostDto
             {
                 Id = createdPost.Id,
@@ -36,24 +47,34 @@ public class PostsController:ControllerBase
                 Body = createdPost.Body,
                 UserId = createdPost.UserId,
                 UserName = user.UserName,
-                CreatedAt = createdPost.CreatedAt,
+                CreatedAt = createdPost.CreatedAt
             };
-            return CreatedAtAction(nameof(GetSingleAsync),
-                new{id = createdPost.Id},response);
+
+            return Created(
+                $"/api/posts/{createdPost.Id}",
+                response
+            );
         }
-        catch(InvalidOperationException e)
+        catch (InvalidOperationException)
         {
-            return BadRequest($"User with ID {dto.UserId} was not found.");
+            return BadRequest(
+                $"User with ID {dto.UserId} was not found."
+            );
         }
     }
 
+    // GET ONE POST
+    // GET /api/posts/1
     [HttpGet("{id:int}")]
     public async Task<ActionResult<PostDto>> GetSingleAsync(int id)
     {
         try
         {
             Post post = await postRepository.GetSingleAsync(id);
-            User user = await userRepository.GetSingleAsync(post.UserId);
+
+            User user =
+                await userRepository.GetSingleAsync(post.UserId);
+
             PostDto response = new PostDto
             {
                 Id = post.Id,
@@ -61,15 +82,24 @@ public class PostsController:ControllerBase
                 Body = post.Body,
                 CreatedAt = post.CreatedAt,
                 UserId = post.UserId,
-                UserName = user.UserName,
+                UserName = user.UserName
             };
+
             return Ok(response);
         }
         catch (InvalidOperationException)
         {
-            return BadRequest($"Post with ID {id} was not found.");
+            return NotFound(
+                $"Post with ID {id} was not found."
+            );
         }
     }
+
+    // GET MANY POSTS
+    // GET /api/posts
+    // GET /api/posts?title=csharp
+    // GET /api/posts?userId=1
+    // GET /api/posts?userName=hasti
     [HttpGet]
     public ActionResult<IEnumerable<PostDto>> GetMany(
         [FromQuery] string? title = null,
@@ -90,7 +120,8 @@ public class PostsController:ControllerBase
 
         if (userId is not null)
         {
-            posts = posts.Where(post => post.UserId == userId);
+            posts = posts.Where(post =>
+                post.UserId == userId);
         }
 
         if (!string.IsNullOrWhiteSpace(userName))
@@ -114,7 +145,8 @@ public class PostsController:ControllerBase
             {
                 User? user = userRepository
                     .GetMany()
-                    .SingleOrDefault(user => user.Id == post.UserId);
+                    .SingleOrDefault(user =>
+                        user.Id == post.UserId);
 
                 return new PostDto
                 {
@@ -130,18 +162,27 @@ public class PostsController:ControllerBase
 
         return Ok(response);
     }
-    [HttpGet("{id:int}")]
+
+    // UPDATE POST
+    // PUT /api/posts/1
+    [HttpPut("{id:int}")]
     public async Task<ActionResult<PostDto>> UpdateAsync(
         int id,
         [FromBody] UpdatePostDto dto)
     {
         try
         {
-            Post post = await postRepository.GetSingleAsync(id);
+            Post post =
+                await postRepository.GetSingleAsync(id);
+
             post.Title = dto.Title;
             post.Body = dto.Body;
+
             await postRepository.UpdateAsync(post);
-            User user = await userRepository.GetSingleAsync(post.UserId);
+
+            User user =
+                await userRepository.GetSingleAsync(post.UserId);
+
             PostDto response = new PostDto
             {
                 Id = post.Id,
@@ -151,25 +192,33 @@ public class PostsController:ControllerBase
                 UserName = user.UserName,
                 CreatedAt = post.CreatedAt
             };
+
             return Ok(response);
         }
         catch (InvalidOperationException)
         {
-            return BadRequest($"Post with ID {id} was not found.");
+            return NotFound(
+                $"Post with ID {id} was not found."
+            );
         }
     }
 
+    // DELETE POST
+    // DELETE /api/posts/1
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteAsync(int id)
     {
         try
         {
             await postRepository.DeleteAsync(id);
+
             return NoContent();
         }
         catch (InvalidOperationException)
         {
-            return NotFound($"Post with ID {id} was not found.");
+            return NotFound(
+                $"Post with ID {id} was not found."
+            );
         }
     }
 }

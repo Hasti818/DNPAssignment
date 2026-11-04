@@ -1,0 +1,68 @@
+@page "/posts"
+
+
+@using ApiContracts.Posts
+@using BlazorApp.Services
+@inject IPostService PostService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Posts</PageTitle>
+
+<h1>Posts</h1>
+
+@if (posts is null)
+{
+    <p>Loading...</p>
+}
+else if (posts.Count == 0)
+{
+    <p>No posts found.</p>
+}
+else
+{
+    @foreach (PostDto post in posts)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@post.Title</h5>
+
+                <p class="card-text">
+                    By @post.UserName
+                </p>
+
+                <button class="btn btn-primary"
+                        @onclick="() => OpenPost(post.Id)">
+                    View Post
+                </button>
+            </div>
+        </div>
+    }
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p>@errorMessage</p>
+}
+
+@code {
+    private List<PostDto>? posts;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            posts = await PostService.GetAllPostsAsync();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            posts = new List<PostDto>();
+        }
+    }
+
+    private void OpenPost(int id)
+    {
+        NavigationManager.NavigateTo($"/posts/{id}");
+    }
+}

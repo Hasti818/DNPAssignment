@@ -1,0 +1,58 @@
+@page "/create-comment"
+
+
+@using ApiContracts.Comments
+@using BlazorApp.Services
+@inject ICommentService CommentService
+
+<PageTitle>Create Comment</PageTitle>
+
+<h1>Create Comment</h1>
+
+<div class="mb-3">
+    <label>Post ID</label>
+    <input class="form-control" type="number" @bind="postId" />
+</div>
+
+<div class="mb-3">
+    <label>Comment</label>
+    <textarea class="form-control" @bind="body"></textarea>
+</div>
+
+<button class="btn btn-primary" @onclick="CreateCommentAsync">
+    Add Comment
+</button>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <p class="mt-3">@message</p>
+}
+
+@code {
+    private int postId;
+    private string body = "";
+    private string message = "";
+
+    private async Task CreateCommentAsync()
+    {
+        try
+        {
+            CreateCommentDto request = new CreateCommentDto
+            {
+                Body = body,
+                UserId = 1
+            };
+
+            CommentDto createdComment =
+                await CommentService.AddCommentAsync(postId, request);
+
+            message = $"Comment {createdComment.Id} added successfully.";
+
+            body = "";
+        }
+        catch (Exception e)
+        {
+            message = e.Message;
+        }
+    }
+}
