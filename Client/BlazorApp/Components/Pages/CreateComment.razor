@@ -1,8 +1,10 @@
 @page "/create-comment"
+@attribute [Authorize]
 
-
+@using System.Security.Claims
 @using ApiContracts.Comments
 @using BlazorApp.Services
+
 @inject ICommentService CommentService
 
 <PageTitle>Create Comment</PageTitle>
@@ -30,23 +32,59 @@
 
 @code {
     private int postId;
+    private int userId;
+
     private string body = "";
     private string message = "";
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState =
+            await AuthenticationStateTask;
+
+        ClaimsPrincipal claimsPrincipal =
+            authenticationState.User;
+
+        if (claimsPrincipal.Identity is null ||
+            !claimsPrincipal.Identity.IsAuthenticated)
+        {
+            return;
+        }
+
+        Claim? idClaim = claimsPrincipal.Claims
+            .SingleOrDefault(claim =>
+                claim.Type == ClaimTypes.NameIdentifier);
+
+        if (idClaim is not null)
+        {
+            userId = int.Parse(idClaim.Value);
+        }
+    }
 
     private async Task CreateCommentAsync()
     {
         try
         {
+            if (userId == 0)
+            {
+                message = "You must be logged in to add a comment.";
+                return;
+            }
+
             CreateCommentDto request = new CreateCommentDto
             {
                 Body = body,
-                UserId = 1
+                UserId = userId
             };
 
             CommentDto createdComment =
                 await CommentService.AddCommentAsync(postId, request);
 
-            message = $"Comment {createdComment.Id} added successfully.";
+            message =
+                $"Comment {createdComment.Id} added successfully.";
 
             body = "";
         }

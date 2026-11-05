@@ -1,8 +1,10 @@
 @page "/create-post"
+@attribute [Authorize]
 
-
+@using System.Security.Claims
 @using ApiContracts.Posts
 @using BlazorApp.Services
+
 @inject IPostService PostService
 
 <PageTitle>Create Post</PageTitle>
@@ -33,21 +35,57 @@
     private string body = "";
     private string message = "";
 
+    private int userId;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState authenticationState =
+            await AuthenticationStateTask;
+
+        ClaimsPrincipal claimsPrincipal =
+            authenticationState.User;
+
+        if (claimsPrincipal.Identity is null ||
+            !claimsPrincipal.Identity.IsAuthenticated)
+        {
+            return;
+        }
+
+        Claim? idClaim = claimsPrincipal.Claims
+            .SingleOrDefault(claim =>
+                claim.Type == ClaimTypes.NameIdentifier);
+
+        if (idClaim is not null)
+        {
+            userId = int.Parse(idClaim.Value);
+        }
+    }
+
     private async Task CreatePostAsync()
     {
         try
         {
+            if (userId == 0)
+            {
+                message = "You must be logged in to create a post.";
+                return;
+            }
+
             CreatePostDto request = new CreatePostDto
             {
                 Title = title,
                 Body = body,
-                UserId = 1
+                UserId = userId
             };
 
             PostDto createdPost =
                 await PostService.AddPostAsync(request);
 
-            message = $"Post '{createdPost.Title}' created successfully.";
+            message =
+                $"Post '{createdPost.Title}' created successfully.";
 
             title = "";
             body = "";

@@ -1,6 +1,14 @@
 @WebAPI_HostAddress = http://localhost:5087
 
+### Weather
 GET {{WebAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### Login
+POST {{WebAPI_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "hasti",
+  "password": "1234"
+}
